@@ -31,7 +31,8 @@ What's more, fewer parameters help to avoid overfitting.
     ```
     examples:
         1. the frequency of a randomforest's node activation.
-        2. each input neuron's contribution to the second layer's variation during the whole training process.
+        2. each input neuron's contribution to the second layer's 
+        variation during the whole training process.
         ...
     ```
     Kernel method is compatible to each of the three above, and

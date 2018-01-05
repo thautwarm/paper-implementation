@@ -4,9 +4,15 @@
 ## [Wikipedia: Kernel Method](https://en.wikipedia.org/wiki/Kernel_method)
 
 ```text
-In machine learning, kernel methods are a class of algorithms for pattern analysis, whose best known member is the support vector machine (SVM). 
-The general task of pattern analysis is to find and study general types of relations (for example clusters, rankings, principal components, correlations, classifications) in datasets. 
-For many algorithms that solve these tasks, the data in raw representation have to be explicitly transformed into feature vector representations via a user-specified feature map: in contrast, kernel methods require only a user-specified kernel, i.e., a similarity function over pairs of data points in raw representation.
+In machine learning, kernel methods are a class of algorithms for pattern analysis, 
+whose best known member is the support vector machine (SVM). 
+The general task of pattern analysis is to find and study general types of relations (for example 
+clusters, rankings, principal components, correlations, classifications) in datasets. 
+For many algorithms that solve these tasks, 
+the data in raw representation have to be explicitly transformed into 
+feature vector representations via a user-specified feature map: 
+in contrast, kernel methods require only a user-specified kernel, 
+i.e., a similarity function over pairs of data points in raw representation.
 ```
 Take care of this one: **a similarity function over pairs of data points in raw representation**.  
 
