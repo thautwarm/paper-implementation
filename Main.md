@@ -14,7 +14,8 @@ What's more, fewer parameters help to avoid overfitting.
     * **Wrapper methods** use a predictive model to score feature subsets.
     ```
     example:
-        for each subset T in raw features, use T to do a machine learning task and then get the validation score as the score of subset T.
+        for each subset T in raw features, use T to do a machine learning
+        task and then get the validation score as the score of subset T.
     ```    
 
     * **Filter methods** use a proxy measure instead of the error rate to score a feature subset.
