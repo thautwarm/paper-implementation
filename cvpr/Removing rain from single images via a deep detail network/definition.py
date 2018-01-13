@@ -15,6 +15,8 @@ def guided_filter(img, width=None, height=None, channel=3):
     """
     This codes comes from the author's team.
     这些是作者团队的代码。
+    ... 所以这堆PEP8 warnings不能怪我:)
+    ... PyCharm词汇量少，常见词汇的warnings不能怪我:)
     """
     r = 15
     if width is None or height is None:
@@ -99,6 +101,10 @@ class RainRemoval(Module):
 
 
 def data_preprocessing(train_samples, *accompanies):
+    """
+    1. 对图片做低通滤波得到base，使用原图减去base得到detail
+    2. 将details, 原图，以及其他的图片(例如ground truth)转化到PyTorch对应的数据结构。
+    """
     details = np.array(
         [train_sample - base
          for train_sample, base in
@@ -111,12 +117,12 @@ def data_preprocessing(train_samples, *accompanies):
     details, train_samples, *accompanies = map(
         # transform data type to make them compatible for PyTorch.
         and_then(
-            torch.from_numpy,  # transfrom numpy.ndarray to torch.Tensor
+            torch.from_numpy,  # transform numpy.ndarray to torch.Tensor
             lambda x: x.float(),  # mark it as float type
             val,  # mark it as PyTorch's immutable variable.
         ),
 
         (details, train_samples, *accompanies))
 
-    # pycharm fails in analyzing syntax here.
+    # pycharm fails in analyzing syntax here...
     return (details, train_samples, *accompanies)
