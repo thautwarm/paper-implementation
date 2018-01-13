@@ -44,8 +44,6 @@ def DataIOStream(raw_src: Flow, num: int):
             .Map(to_batch)
         )
 
-
-
 train_batches = DataIOStream(raw_sources, train_data_size)
 test_batches = DataIOStream(raw_sources, test_data_size)
 
