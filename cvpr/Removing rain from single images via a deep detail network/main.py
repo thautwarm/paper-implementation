@@ -2,16 +2,17 @@ from definition import *
 import os
 from linq import Flow
 from skimage import data
+from matplotlib import pyplot as plt
 
-model = RainRemoval(3)
+model = RainRemoval(2)
 
 # 数据下载地址见: http://smartdsp.xmu.edu.cn/cvpr2017.html
 # download data-sets here: http://smartdsp.xmu.edu.cn/cvpr2017.html
 train_dir = './rainy_image_dataset/ground truth'
 test_dir = './rainy_image_dataset/rainy image'
-pos = 15
+pos = 25
 neg = 5
-epochs = 60
+epochs = 15
 lr = 0.1
 loss_fn = torch.nn.MSELoss()
 
@@ -23,7 +24,7 @@ images = (
                        [os.path.join(test_dir, x[:-4] + "_" + str(i) + '.jpg')
                         for i in range(1, 15)])  # 将训练集和数据集地址合并
         .Map(lambda img_file_names: list(map(and_then(data.imread,  # 读取图像
-                                                      lambda x: x / 255),  # 放缩到[0, 1]
+                                                      lambda x: x.astype(float)),  # 浮点数张量
                                              img_file_names)))
         .Take(pos + neg)  # 选取前pos + neg个batch， 每个batch有28个图片，其中有14个是相同的target picture
         .ToList()
@@ -43,6 +44,8 @@ for _ in range(epochs):
         opt.zero_grad()
 
         train_samples, train_targets = train
+        
+        # 内存不足，只能取少一点的数据
         train_samples = train_samples[:5]
         train_targets = train_targets[:5]
 
@@ -57,3 +60,28 @@ for _ in range(epochs):
         opt.step()
 
     lr *= 0.1
+
+for test in test_batches:
+    test_samples, test_targets = test    
+    details, test_samples, test_targets = data_preprocessing(test_samples, test_targets)
+    prediction = model(details, test_samples)
+    
+    pic = prediction.data.numpy().clip(0, 255)[0]
+    plt.figure()
+    plt.title('raw')
+    plt.imshow(pic.transpose(1, 2, 0))
+    
+    pic = prediction.data.numpy().clip(0, 255)[0]
+    plt.figure()
+    plt.title('prediction')
+    plt.imshow(pic.transpose(1, 2, 0))
+    
+    pic = test_samples.data.numpy().clip(0, 255)[0]
+    plt.figure()
+    plt.title('prediction')
+    plt.imshow(pic.transpose(1, 2, 0))
+    
+    plt.show()
+    
+    
+    
