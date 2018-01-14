@@ -84,6 +84,7 @@ try:
                 train_loss.backward()
                 opt.step()
                 print('current-minibatch-loss:', train_loss.cpu().data.numpy()[0])
+                train_loss = None
             
             loss = loss.cpu().data.numpy()[0]
             Loss.append(loss)
@@ -92,6 +93,7 @@ try:
             train_loss.backward()
             opt.step()
             print('current-minibatch-loss:', train_loss.cpu().data.numpy()[0])
+            train_loss = None
             
         Loss: float = np.mean(Loss)
         print('epoch {}. lr {}. loss: {}'.format(epoch, lr, Loss))
