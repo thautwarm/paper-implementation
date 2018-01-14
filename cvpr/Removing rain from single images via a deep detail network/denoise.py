@@ -28,7 +28,7 @@ try:
     print('load model')
 except:    
     print('new_model')
-    model = RainRemoval(4)
+    model = RainRemoval(8)
 
 model.cuda()
 
@@ -38,8 +38,8 @@ train_data_size = 500
 test_data_size = 100
 epochs = 100
 lr = 0.01
-batch_group_num = 5
-loss_fn = torch.nn.MSELoss(size_average=True)
+batch_group_num = 6
+loss_fn = torch.nn.MSELoss()
 
 
 def to_batch(image):

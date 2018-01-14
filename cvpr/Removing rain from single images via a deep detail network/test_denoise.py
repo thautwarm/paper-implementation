@@ -28,19 +28,16 @@ try:
     print('load model')
 except:    
     print('new_model')
-    model = RainRemoval(4)
-
-model.cuda()
+    model = RainRemoval(10)
 
 train_dir = './rainy_image_dataset/ground truth'
 raw_sources = Flow(os.listdir(train_dir))
 train_data_size = 500
 test_data_size = 100
 epochs = 100
-lr = 0.1
+lr = 0.01
 batch_group_num = 5
 loss_fn = torch.nn.MSELoss(size_average=True)
-
 
 
 def to_batch(image):
@@ -64,17 +61,7 @@ def DataIOStream(raw_src: Flow):
                             poisson_noise(im)] | infix/Map@img_as_float)
             .Map(to_batch))
 
-
-
-batches = DataIOStream(raw_sources)
-#train_batches = batches.Take(train_data_size).ToList()
-test_batches = batches.Take(test_data_size).ToList()
-
-test_batches = (DataIOStream(raw_sources
-                           .Drop(train_data_size)
-                           .Take(test_data_size))
-                    .Map(img_as_float)
-                    .ToList())
+test_batches = DataIOStream(raw_sources.Drop(train_data_size).Take(test_data_size))
     
 for test in test_batches.Take(test_data_size).Unboxed():
     test_samples, test_targets = test    
