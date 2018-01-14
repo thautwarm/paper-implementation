@@ -25,8 +25,9 @@ test_dir = './rainy_image_dataset/rainy image'
 train_data_size = 500
 test_data_size = 100
 epochs = 115
+batch_group_num = 5 
 lr = 0.1
-loss_fn = torch.nn.MSELoss(size_average=False)
+loss_fn = torch.nn.MSELoss(size_average=True)
 
 
 def to_batch(image):
@@ -58,7 +59,10 @@ try:
     for epoch in range(epochs):
         opt = torch.optim.Adam(model.parameters(), lr=lr)
         Loss: list = []
-        for train in train_batches.Take(train_data_size).Unboxed():
+        train_loss = None
+        
+        for inner_idx, train in enumerate(train_batches.Take(train_data_size).Unboxed()):
+            
             opt.zero_grad()
         
             train_samples, train_targets = train
@@ -71,12 +75,24 @@ try:
             prediction = model(details.cuda(), train_samples.cuda())
     
             loss = loss_fn(prediction, train_targets.cuda())
-            loss.backward()
-            opt.step()
+            if train_loss is not None:
+                train_loss += loss
+            else:
+                train_loss = loss
+            
+            if inner_idx is not 0 and inner_idx % batch_group_num == 0:
+                train_loss.backward()
+                opt.step()
+                print('current-minibatch-loss:', train_loss.cpu().data.numpy()[0])
             
             loss = loss.cpu().data.numpy()[0]
             Loss.append(loss)
-    
+        
+        if inner_idx % batch_group_num is not 0:
+            train_loss.backward()
+            opt.step()
+            print('current-minibatch-loss:', train_loss.cpu().data.numpy()[0])
+            
         Loss: float = np.mean(Loss)
         print('epoch {}. lr {}. loss: {}'.format(epoch, lr, Loss))
         lr = 0.1 if Loss > 100 else 0.01
