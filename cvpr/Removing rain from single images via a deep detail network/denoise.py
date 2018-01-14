@@ -116,7 +116,6 @@ try:
             
         Loss: float = np.mean(Loss)
         print('epoch {}. lr {}. loss: {}'.format(epoch, lr, Loss))
-        lr = 0.1 if Loss > 100 else 0.01
 finally:
     print('saving model')
     torch.save(model.cpu(), 'model_denoise', pickle_module=dill)
