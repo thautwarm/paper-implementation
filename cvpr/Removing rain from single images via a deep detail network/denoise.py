@@ -46,11 +46,10 @@ def to_batch(image):
     return (np.stack(samples),  # X
             np.stack([target] * len(samples)))
 
-def mixed_noise(imgs_flow: Flow):
-    return imgs_flow.Map(
-            and_then(
+def mixed_noise(imgs_flow: np.ndarray):
+    return and_then(
                 gaussian_noise,  # 加高斯噪声
-                poisson_noise)) # 浮点数张量 [0, 255]->[0, 1]
+                poisson_noise)(imgs_flow)  # 浮点数张量 [0, 255]->[0, 1]
 
 def DataIOStream(raw_src: Flow):
     return (raw_src
