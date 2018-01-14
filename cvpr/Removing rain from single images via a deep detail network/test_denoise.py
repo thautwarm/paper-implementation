@@ -55,24 +55,42 @@ test_batches = DataIOStream(raw_sources
                                 .Drop(train_data_size)
                                 .Take(test_data_size))
     
-for test in test_batches.Unboxed():
+SSE = []
+RE = []
+for test in test_batches.Take(test_data_size).Unboxed():
     test_samples, test_targets = test    
     details, test_samples, test_targets = data_preprocessing(test_samples, test_targets)
     prediction = model(details, test_samples)
     
-    pic = prediction.data.numpy()[0].clip(0, 1)
-    plt.figure()
-    plt.title('raw')
-    plt.imshow(pic.transpose(1, 2, 0))
+    raw = test_samples.data.numpy()[0].clip(0, 1)
+#    plt.figure()
+#    plt.title('raw')
+#    plt.imshow(raw.transpose(1, 2, 0))
     
-    pic = prediction.data.numpy()[0].clip(0, 1)
-    plt.figure()
-    plt.title('prediction')
-    plt.imshow(pic.transpose(1, 2, 0))
+    prediction = prediction.data.numpy()[0].clip(0, 1)
+#    plt.figure()
+#    plt.title('prediction')
+#    plt.imshow(prediction.transpose(1, 2, 0))
     
-    pic = test_targets.data.numpy()[0].clip(0, 1)
-    plt.figure()
-    plt.title('target')
-    plt.imshow(pic.transpose(1, 2, 0))
+    target = test_targets.data.numpy()[0].clip(0, 1)
+#    plt.figure()
+#    plt.title('target')
+#    plt.imshow(target.transpose(1, 2, 0))
     
     plt.show()
+    
+    raw_error = np.sum(np.square(target-raw))
+    RE.append(raw_error)
+    sse = np.sum(np.square(target-prediction))
+    SSE.append(sse)
+    print(' raw_error: ', raw_error,
+          ' SSE: ', sse)
+    
+
+plt.title('去雨后的平方误差和的分布')
+plt.hist(SSE, color='orange')
+plt.show()
+
+plt.title('原始输入的平方误差和的分布')
+plt.hist(RE, color='blue')
+plt.show()
