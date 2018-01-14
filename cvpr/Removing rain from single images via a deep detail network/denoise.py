@@ -39,7 +39,7 @@ test_data_size = 100
 epochs = 100
 lr = 0.01
 batch_group_num = 6
-loss_fn = torch.nn.MSELoss()
+loss_fn = torch.nn.MSELoss(size_average=False)
 
 
 def to_batch(image):
