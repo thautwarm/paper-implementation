@@ -23,12 +23,8 @@ from itertools import cycle
 import dill
 from noise_maker import poisson_noise, gaussian_noise
 
-try:    
-    model = torch.load('model_denoise', pickle_module=dill)
-    print('load model')
-except:    
-    print('new_model')
-    model = RainRemoval(10)
+model = torch.load('model_denoise', pickle_module=dill)
+print('load model')
 
 train_dir = './rainy_image_dataset/ground truth'
 raw_sources = Flow(os.listdir(train_dir))
@@ -38,12 +34,6 @@ epochs = 100
 lr = 0.01
 batch_group_num = 5
 loss_fn = torch.nn.MSELoss(size_average=True)
-
-
-def to_batch(image):
-    target, *samples = image
-    return (np.stack(samples),  # X
-            np.stack([target] * len(samples)))
 
 def mixed_noise(imgs_flow: np.ndarray):
     return and_then(
@@ -61,9 +51,11 @@ def DataIOStream(raw_src: Flow):
                             poisson_noise(im)] | infix/Map@img_as_float)
             .Map(to_batch))
 
-test_batches = DataIOStream(raw_sources.Drop(train_data_size).Take(test_data_size))
+test_batches = DataIOStream(raw_sources
+                                .Drop(train_data_size)
+                                .Take(test_data_size))
     
-for test in test_batches.Take(test_data_size).Unboxed():
+for test in test_batches.Unboxed():
     test_samples, test_targets = test    
     details, test_samples, test_targets = data_preprocessing(test_samples, test_targets)
     prediction = model(details, test_samples)

@@ -99,6 +99,11 @@ class RainRemoval(Module):
 
         return self.conv_end(last) + img
 
+def to_batch(images):
+    target, *samples = images
+    return (np.stack(samples),  # X
+            np.stack([target] * len(samples)))
+
 
 def data_preprocessing(train_samples, *accompanies):
     """
