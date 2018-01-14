@@ -76,16 +76,16 @@ class RainRemoval(Module):
     def __init__(self, group_num: int, kernel_size: int = 3):
         super(RainRemoval, self).__init__()
 
-        self.conv_fst = SamePaddingConv2d(3, 16, kernel_size=kernel_size, bias=True)
+        self.conv_fst = SamePaddingConv2d(3, 12, kernel_size=kernel_size, bias=True)
         self.convs = nn.ModuleList()
 
         for idx in range(0, group_num, 2):
             self.convs.append(nn.ModuleList([
-                SamePaddingConv2d(16, 16, kernel_size, True),
-                SamePaddingConv2d(16, 16, kernel_size, True)
+                SamePaddingConv2d(12, 12, kernel_size, True),
+                SamePaddingConv2d(12, 12, kernel_size, True)
             ]))
 
-        self.conv_end = SamePaddingConv2d(16, 3, kernel_size=kernel_size, bias=True)
+        self.conv_end = SamePaddingConv2d(12, 3, kernel_size=kernel_size, bias=True)
 
     def forward(self, detail, img):
         last = self.conv_fst(detail)
