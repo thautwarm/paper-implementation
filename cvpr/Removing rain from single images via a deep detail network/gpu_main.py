@@ -1,10 +1,10 @@
+import matplotlib
+matplotlib.use("Agg")
 from definition import *
 import os
 from linq import Flow
 from skimage import data, img_as_float
 from matplotlib import pyplot as plt
-import matplotlib
-matplotlib.use("Agg")
 from math import exp
 from itertools import cycle
 import dill
@@ -39,7 +39,6 @@ raw_sources = Flow(os.listdir(train_dir))
 def DataIOStream(raw_src: Flow, num: int):
     return (raw_src
             .Take(num)
-            .Then(cycle)
             .Filter(lambda x: x.endswith('.jpg'))  # select jpg files/选取jpg格式文件
             .Map(lambda x: [os.path.join(train_dir, x)] +
                            [os.path.join(test_dir, x[:-4] + "_" + str(i) + '.jpg')
@@ -50,7 +49,8 @@ def DataIOStream(raw_src: Flow, num: int):
             .Map(to_batch)
         )
 
-train_batches = DataIOStream(raw_sources, train_data_size)
+train_batches = DataIOStream(raw_sources, train_data_size).ToList().Then(cycle)
+print('data_loaded')
 #test_batches = DataIOStream(raw_sources.Drop(train_data_size), test_data_size)
 
 loss = None
@@ -76,12 +76,12 @@ try:
             
             loss = loss.cpu().data.numpy()[0]
             Loss.append(loss)
-            print('after minibatch: loss =', Loss[-1])
     
         Loss: float = np.mean(Loss)
         print('epoch {}. lr {}. loss: {}'.format(epoch, lr, Loss))
         lr = 0.1 if Loss > 100 else 0.01
 finally:
+    print('saving model')
     torch.save(model.cpu(), 'model', pickle_module=dill)
         
 
