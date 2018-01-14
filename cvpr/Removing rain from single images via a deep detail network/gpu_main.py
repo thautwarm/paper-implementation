@@ -3,6 +3,8 @@ import os
 from linq import Flow
 from skimage import data, img_as_float
 from matplotlib import pyplot as plt
+import matplotlib
+matplotlib.use("Agg")
 from math import exp
 from itertools import cycle
 import dill
