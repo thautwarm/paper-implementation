@@ -41,6 +41,7 @@ batch_group_num = 5
 loss_fn = torch.nn.MSELoss(size_average=True)
 
 
+
 def to_batch(image):
     target, *samples = image
     return (np.stack(samples),  # X
@@ -67,69 +68,34 @@ def DataIOStream(raw_src: Flow):
 
 
 
-
-
 batches = DataIOStream(raw_sources)
-train_batches = batches.Take(train_data_size).ToList()
-#test_batches = batches.Take(test_data_size).ToList()
+#train_batches = batches.Take(train_data_size).ToList()
+test_batches = batches.Take(test_data_size).ToList()
 
-#test_batches = (DataIOStream(raw_sources
-#                           .Drop(train_data_size)
-#                           .Take(test_data_size))
-#                    .Map(img_as_float)
-#                    .ToList())
-print('data_loaded')
-
-loss = None
-try:
-    for epoch in range(epochs):
-        opt = torch.optim.Adam(model.parameters(), lr=lr)
-        Loss: list = []
-        train_loss = None
-        
-        for inner_idx, train in enumerate(train_batches.Take(train_data_size).Unboxed()):
-            
-            opt.zero_grad()
-        
-            train_samples, train_targets = train
-            
-            # 内存不足，只能取少一点的数据
+test_batches = (DataIOStream(raw_sources
+                           .Drop(train_data_size)
+                           .Take(test_data_size))
+                    .Map(img_as_float)
+                    .ToList())
     
-            details, train_samples, train_targets = data_preprocessing(train_samples, train_targets)
-            
-            
-            prediction = model(details.cuda(), train_samples.cuda())
+for test in test_batches.Take(test_data_size).Unboxed():
+    test_samples, test_targets = test    
+    details, test_samples, test_targets = data_preprocessing(test_samples, test_targets)
+    prediction = model(details, test_samples)
     
-            loss = loss_fn(prediction, train_targets.cuda())
-            if train_loss is not None:
-                train_loss += loss
-            else:
-                train_loss = loss
-            
-            if inner_idx is not 0 and inner_idx % batch_group_num == 0:
-                train_loss.backward()
-                opt.step()
-                print('current-minibatch-loss:', train_loss.cpu().data.numpy()[0])
-                train_loss = None
-            
-            loss = loss.cpu().data.numpy()[0]
-            Loss.append(loss)
-        
-        if inner_idx % batch_group_num is not 0:
-            train_loss.backward()
-            opt.step()
-            print('current-minibatch-loss:', train_loss.cpu().data.numpy()[0])
-            train_loss = None
-            
-        Loss: float = np.mean(Loss)
-        print('epoch {}. lr {}. loss: {}'.format(epoch, lr, Loss))
-        lr = 0.1 if Loss > 100 else 0.01
-finally:
-    print('saving model')
-    torch.save(model.cpu(), 'model_denoise', pickle_module=dill)
+    pic = prediction.data.numpy()[0].clip(0, 1)
+    plt.figure()
+    plt.title('raw')
+    plt.imshow(pic.transpose(1, 2, 0))
     
-
-
-
-
-
+    pic = prediction.data.numpy()[0].clip(0, 1)
+    plt.figure()
+    plt.title('prediction')
+    plt.imshow(pic.transpose(1, 2, 0))
+    
+    pic = test_targets.data.numpy()[0].clip(0, 1)
+    plt.figure()
+    plt.title('target')
+    plt.imshow(pic.transpose(1, 2, 0))
+    
+    plt.show()
