@@ -63,7 +63,8 @@ def DataIOStream(raw_src: Flow):
                                                 lambda im: [im, 
                                                             mixed_noise(im), 
                                                             gaussian_noise(im), 
-                                                            poisson_noise(im)] | infix/Map@img_as_float))
+                                                            poisson_noise(im)] | infix/Map@img_as_float)
+                                            .Unboxed())
             .Map(to_batch))
 
 
