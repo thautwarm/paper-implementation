@@ -14,6 +14,7 @@ else:
 from definition import *
 import os
 from linq import Flow
+from linq.standard.general import Map
 from skimage import data, img_as_float
 from pipe_fn import infix, and_then
 from matplotlib import pyplot as plt
@@ -54,19 +55,13 @@ def mixed_noise(imgs_flow: np.ndarray):
 def DataIOStream(raw_src: Flow):
     return (raw_src
             .Filter(lambda x: x.endswith('.jpg'))  # select jpg files/选取jpg格式文件
-            .Map(lambda x: [os.path.join(train_dir, x)])  # 拿到ground truth数据
-            .Map(lambda img_file_names: Flow(img_file_names)
-                                            .Map(data.imread)
-                                            .Map(
-                                                lambda im: [im, 
-                                                            mixed_noise(im), 
-                                                            gaussian_noise(im), 
-                                                            poisson_noise(im)] | infix/Map@img_as_float)
-                                            .Unboxed())
+            .Map(lambda x: os.path.join(train_dir, x))  # 拿到ground truth数据
+            .Map(data.imread)
+            .Map(lambda im:[im, 
+                            mixed_noise(im), 
+                            gaussian_noise(im), 
+                            poisson_noise(im)] | infix/Map@img_as_float)
             .Map(to_batch))
-
-
-
 
 
 batches = DataIOStream(raw_sources)
