@@ -5,12 +5,13 @@ Created on Sun Jan 14 16:47:22 2018
 @author: misakawa
 """
 
-import matplotlib
+import matplotlib as mpl
 import platform
+mpl.rcParams['font.sans-serif']=['FangSong']
 if 'windows' in platform.architecture()[1].lower():
     pass
 else:
-    matplotlib.use("Agg")
+    mpl.use("Agg")
 from definition import *
 import os
 from linq import Flow
