@@ -30,9 +30,9 @@ test_dir = './rainy_image_dataset/rainy image'
 train_data_size = 500
 test_data_size = 100
 epochs = 115
-batch_group_num = 5 
-lr = 0.1
-loss_fn = torch.nn.MSELoss(size_average=True)
+batch_group_num = 3 
+lr = 0.01
+loss_fn = torch.nn.MSELoss(size_average=False)
 
 
 def to_batch(image):
@@ -102,7 +102,6 @@ try:
             
         Loss: float = np.mean(Loss)
         print('epoch {}. lr {}. loss: {}'.format(epoch, lr, Loss))
-        lr = 0.1 if Loss > 100 else 0.01
 finally:
     print('saving model')
     torch.save(model.cpu(), 'model', pickle_module=dill)
