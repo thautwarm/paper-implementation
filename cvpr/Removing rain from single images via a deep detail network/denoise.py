@@ -63,9 +63,7 @@ def DataIOStream(raw_src: Flow):
                             poisson_noise(im)] | infix/Map@img_as_float)
             .Map(to_batch))
 
-
-batches = DataIOStream(raw_sources)
-train_batches = batches.Take(train_data_size).ToList()
+train_batches = DataIOStream(raw_sources.Take(train_data_size).Then(cycle))
 #test_batches = batches.Take(test_data_size).ToList()
 
 #test_batches = (DataIOStream(raw_sources
