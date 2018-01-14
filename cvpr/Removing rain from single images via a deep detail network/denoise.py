@@ -37,7 +37,7 @@ raw_sources = Flow(os.listdir(train_dir))
 train_data_size = 500
 test_data_size = 100
 epochs = 100
-lr = 0.1
+lr = 0.01
 batch_group_num = 5
 loss_fn = torch.nn.MSELoss(size_average=True)
 
