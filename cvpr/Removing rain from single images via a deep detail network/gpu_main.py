@@ -52,35 +52,36 @@ train_batches = DataIOStream(raw_sources, train_data_size)
 #test_batches = DataIOStream(raw_sources.Drop(train_data_size), test_data_size)
 
 loss = None
-
-for epoch in range(epochs):
-    opt = torch.optim.Adam(model.parameters(), lr=lr)
-    Loss: list = []
-    for train in train_batches.Take(train_data_size).Unboxed():
-        opt.zero_grad()
+try:
+    for epoch in range(epochs):
+        opt = torch.optim.Adam(model.parameters(), lr=lr)
+        Loss: list = []
+        for train in train_batches.Take(train_data_size).Unboxed():
+            opt.zero_grad()
+        
+            train_samples, train_targets = train
+            
+            # 内存不足，只能取少一点的数据
     
-        train_samples, train_targets = train
-        
-        # 内存不足，只能取少一点的数据
-
-        details, train_samples, train_targets = data_preprocessing(train_samples, train_targets)
-        
-        
-        prediction = model(details.cuda(), train_samples.cuda())
-
-        loss = loss_fn(prediction, train_targets.cuda())
-        loss.backward()
-        opt.step()
-        
-        loss = loss.cpu().data.numpy()[0]
-        Loss.append(loss)
-        print('after minibatch: loss =', Loss[-1])
-
-    Loss: float = np.mean(Loss)
-    print('epoch {}. lr {}. loss: {}'.format(epoch, lr, Loss))
-    lr = 0.1 if Loss > 100 else 0.01
+            details, train_samples, train_targets = data_preprocessing(train_samples, train_targets)
+            
+            
+            prediction = model(details.cuda(), train_samples.cuda())
     
-torch.save(model.cpu(), 'model', pickle_module=dill)
+            loss = loss_fn(prediction, train_targets.cuda())
+            loss.backward()
+            opt.step()
+            
+            loss = loss.cpu().data.numpy()[0]
+            Loss.append(loss)
+            print('after minibatch: loss =', Loss[-1])
+    
+        Loss: float = np.mean(Loss)
+        print('epoch {}. lr {}. loss: {}'.format(epoch, lr, Loss))
+        lr = 0.1 if Loss > 100 else 0.01
+finally:
+    torch.save(model.cpu(), 'model', pickle_module=dill)
+        
 
 #for test in test_batches.Take(test_data_size).Unboxed():
 #    test_samples, test_targets = test    
