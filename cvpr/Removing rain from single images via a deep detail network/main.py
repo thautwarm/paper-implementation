@@ -47,7 +47,7 @@ def DataIOStream(raw_src: Flow, num: int):
         )
 
 train_batches = DataIOStream(raw_sources, train_data_size)
-#test_batches = DataIOStream(raw_sources.Drop(train_data_size), test_data_size)
+test_batches = DataIOStream(raw_sources.Drop(train_data_size), test_data_size)
 
 loss = None
 
@@ -79,27 +79,27 @@ for epoch in range(epochs):
     
 torch.save(model, 'model', pickle_module=dill)
 
-#for test in test_batches.Take(test_data_size).Unboxed():
-#    test_samples, test_targets = test    
-#    details, test_samples, test_targets = data_preprocessing(test_samples, test_targets)
-#    prediction = model(details, test_samples)
-#    
-#    pic = prediction.data.numpy()[0].clip(0, 1)
-#    plt.figure()
-#    plt.title('raw')
-#    plt.imshow(pic.transpose(1, 2, 0))
-#    
-#    pic = prediction.data.numpy()[0].clip(0, 1)
-#    plt.figure()
-#    plt.title('prediction')
-#    plt.imshow(pic.transpose(1, 2, 0))
-#    
-#    pic = test_targets.data.numpy()[0].clip(0, 1)
-#    plt.figure()
-#    plt.title('target')
-#    plt.imshow(pic.transpose(1, 2, 0))
-#    
-#    plt.show()
+for test in test_batches.Take(test_data_size).Unboxed():
+    test_samples, test_targets = test    
+    details, test_samples, test_targets = data_preprocessing(test_samples, test_targets)
+    prediction = model(details, test_samples)
+    
+    pic = test_samples.data.numpy()[0].clip(0, 1)
+    plt.figure()
+    plt.title('raw')
+    plt.imshow(pic.transpose(1, 2, 0))
+    
+    pic = prediction.data.numpy()[0].clip(0, 1)
+    plt.figure()
+    plt.title('prediction')
+    plt.imshow(pic.transpose(1, 2, 0))
+    
+    pic = test_targets.data.numpy()[0].clip(0, 1)
+    plt.figure()
+    plt.title('target')
+    plt.imshow(pic.transpose(1, 2, 0))
+    
+    plt.show()
     
     
     

@@ -1,63 +1,80 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Jan 14 16:47:22 2018
+
+@author: misakawa
+"""
+
 import matplotlib
 import platform
 if 'windows' in platform.architecture()[1].lower():
     pass
 else:
     matplotlib.use("Agg")
-
 from definition import *
 import os
 from linq import Flow
 from skimage import data, img_as_float
+from pipe_fn import infix, and_then
 from matplotlib import pyplot as plt
 from math import exp
 from itertools import cycle
 import dill
+from noise_maker import poisson_noise, gaussian_noise
+
 try:    
-    model = torch.load('model', pickle_module=dill)
+    model = torch.load('model_denoise', pickle_module=dill)
     print('load model')
 except:    
     print('new_model')
-    model = RainRemoval(10)
+    model = RainRemoval(4)
 
 model.cuda()
 
-
-# 数据下载地址见: http://smartdsp.xmu.edu.cn/cvpr2017.html
-# download data-sets here: http://smartdsp.xmu.edu.cn/cvpr2017.html
 train_dir = './rainy_image_dataset/ground truth'
-test_dir = './rainy_image_dataset/rainy image'
+raw_sources = Flow(os.listdir(train_dir))
 train_data_size = 500
 test_data_size = 100
-epochs = 115
-batch_group_num = 5 
+epochs = 100
 lr = 0.1
+batch_group_num = 5
 loss_fn = torch.nn.MSELoss(size_average=True)
 
 
-def to_batch(image):
-    target, *samples = image
-    return (np.stack(samples),  # X
-            np.stack([target] * len(samples)))
-    
-raw_sources = Flow(os.listdir(train_dir))
 
-def DataIOStream(raw_src: Flow, num: int):
+def mixed_noise(imgs_flow: Flow):
+    return imgs_flow.Map(
+            and_then(
+                gaussian_noise,  # 加高斯噪声
+                poisson_noise)) # 浮点数张量 [0, 255]->[0, 1]
+
+def DataIOStream(raw_src: Flow):
     return (raw_src
-            .Take(num)
             .Filter(lambda x: x.endswith('.jpg'))  # select jpg files/选取jpg格式文件
-            .Map(lambda x: [os.path.join(train_dir, x)] +
-                           [os.path.join(test_dir, x[:-4] + "_" + str(i) + '.jpg')
-                            for i in range(1, 3)])  # 将噪声数据和真实数据进行合并
-            .Map(lambda img_file_names: list(map(and_then(data.imread,  # 读取图像
-                                                          img_as_float),  # 浮点数张量 [0, 255]->[0, 1]
-                                                 img_file_names)))
-            .Map(to_batch)
-        )
+            .Map(lambda x: [os.path.join(train_dir, x)])  # 拿到ground truth数据
+            .Map(lambda img_file_names: Flow(img_file_names)
+                                            .Map(data.imread)
+                                            .Map(
+                                                lambda im: [im, 
+                                                            mixed_noise(im), 
+                                                            gaussian_noise(im), 
+                                                            poisson_noise(im)] | infix/Map@img_as_float)
+                    ))
 
-train_batches = DataIOStream(raw_sources, train_data_size).ToList().Then(cycle)
+
+
+
+
+batches = DataIOStream(raw_sources)
+train_batches = batches.Take(train_data_size).ToList()
+test_batches = batches.Take(test_data_size).ToList()
+
+test_batches = (DataIOStream(raw_sources
+                           .Drop(train_data_size)
+                           .Take(test_data_size))
+                    .Map(img_as_float)
+                    .ToList())
 print('data_loaded')
-#test_batches = DataIOStream(raw_sources.Drop(train_data_size), test_data_size)
 
 loss = None
 try:
@@ -106,29 +123,9 @@ try:
 finally:
     print('saving model')
     torch.save(model.cpu(), 'model', pickle_module=dill)
-        
+    
 
-#for test in test_batches.Take(test_data_size).Unboxed():
-#    test_samples, test_targets = test    
-#    details, test_samples, test_targets = data_preprocessing(test_samples, test_targets)
-#    prediction = model(details, test_samples)
-#    
-#    pic = prediction.data.numpy()[0].clip(0, 1)
-#    plt.figure()
-#    plt.title('raw')
-#    plt.imshow(pic.transpose(1, 2, 0))
-#    
-#    pic = prediction.data.numpy()[0].clip(0, 1)
-#    plt.figure()
-#    plt.title('prediction')
-#    plt.imshow(pic.transpose(1, 2, 0))
-#    
-#    pic = test_targets.data.numpy()[0].clip(0, 1)
-#    plt.figure()
-#    plt.title('target')
-#    plt.imshow(pic.transpose(1, 2, 0))
-#    
-#    plt.show()
-    
-    
-    
+
+
+
+
