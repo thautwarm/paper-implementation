@@ -38,7 +38,7 @@ train_data_size = 500
 test_data_size = 100
 epochs = 100
 lr = 0.01
-batch_group_num = 6
+batch_group_num = 3
 loss_fn = torch.nn.MSELoss(size_average=False)
 
 
